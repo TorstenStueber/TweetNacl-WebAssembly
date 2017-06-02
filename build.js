@@ -1,7 +1,7 @@
 const wast2wasm = require('wast2wasm');
 const fs = require('fs');
 
-const wastCode = fs.readFileSync('./simple.wast').toString('utf8');
+const wastCode = fs.readFileSync('./src/simple.wat').toString('utf8');
 
 wast2wasm(wastCode).then(output => {
 	const outputArray = [];
@@ -11,10 +11,10 @@ wast2wasm(wastCode).then(output => {
 
 	const jsContent = 'window.wasmCode = [' + outputArray.join(',') + ']';
 
-	const dir = './build';
+	const dir = './dist';
 	if (!fs.existsSync(dir)){
 		fs.mkdirSync(dir);
 	}
 
-	fs.writeFileSync('./build/wasmCode.js', jsContent);
+	fs.writeFileSync('./dist/wasmCode.js', jsContent);
 })

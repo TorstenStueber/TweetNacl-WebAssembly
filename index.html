@@ -3,7 +3,7 @@
 <head>
 	<meta charset="utf-8">
 	<title>Wasm Testbed</title>
-	<script type="text/javascript" src='./build/wasmCode.js'></script>
+	<script type="text/javascript" src='./dist/wasmCode.js'></script>
 </head>
 <body>
 	<script>
@@ -27,11 +27,6 @@
 
 		function run(instance) {
 			function sum(n) {let s = 0; for (let i = 0; i < n; i++) s = (s+i) % 12345; return s;}
-
-			var i32 = new Uint32Array(instance.exports.mem.buffer);
-			for (let i = 0; i < 10; i++) {
-				i32[i] = i;
-			}
 
 			console.time('wasm');
 			for (let i = 0; i < 1; i++)
