@@ -1,0 +1,14 @@
+{
+  "name": "wasmtest",
+  "version": "0.0.1",
+  "description": "A simple Web Assembly experiment",
+  "main": "build.js",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "author": "Torsten Stüber",
+  "license": "MIT",
+  "dependencies": {
+    "wast2wasm": "ewasm/wast2wasm#f8bc92099752fec64"
+  }
+}
