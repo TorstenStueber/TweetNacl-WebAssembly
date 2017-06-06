@@ -40,10 +40,20 @@
 	(param $y i32)
 	(result i32)
 
-	(get_local $x)
-	(get_local $y)
-	(i32.const 16)
-	(call $vn)
+	(local $d i64)
+	(set_local $d (i64.or (get_local $d)
+		(i64.xor (i64.load offset=0 (get_local $x)) (i64.load offset=0 (get_local $y)))
+		(i64.xor (i64.load offset=8 (get_local $x)) (i64.load offset=8 (get_local $y)))
+	))
+
+	(set_local $d (i64.or (
+		(i64.and (get_local $d) (0xffffffff))
+		(i64.shr_u (get_local $d) (32))
+	)))
+
+	(i32.wrap/i64 (i64.sub
+		(i64.and (i64.const 1) (i64.shr_u (i64.sub (get_local $d) (i64.const 1)) (i64.const 32))) 
+		(i64.const 1)))
 )
 
 ;; input pointer $x: 32 bytes
@@ -54,8 +64,24 @@
 	(param $y i32)
 	(result i32)
 
-	(get_local $x)
-	(get_local $y)
-	(i32.const 32)
-	(call $vn)
+	(local $d i64)
+	(set_local $d (i64.or
+		(i64.or (get_local $d)
+			(i64.xor (i64.load offset=0 (get_local $x)) (i64.load offset=0 (get_local $y)))
+			(i64.xor (i64.load offset=8 (get_local $x)) (i64.load offset=8 (get_local $y)))
+		)
+		(i64.or (get_local $d)
+			(i64.xor (i64.load offset=16 (get_local $x)) (i64.load offset=16 (get_local $y)))
+			(i64.xor (i64.load offset=24 (get_local $x)) (i64.load offset=24 (get_local $y)))
+		)
+	))
+
+	(set_local $d (i64.or (
+		(i64.and (get_local $d) (0xffffffff))
+		(i64.shr_u (get_local $d) (32))
+	)))
+
+	(i32.wrap/i64 (i64.sub
+		(i64.and (i64.const 1) (i64.shr_u (i64.sub (get_local $d) (i64.const 1)) (i64.const 32))) 
+		(i64.const 1)))
 )
