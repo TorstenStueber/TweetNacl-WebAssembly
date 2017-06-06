@@ -1,3 +1,5 @@
+;; Author: Torsten Stüber
+
 ;; output pointer $m: $d bytes
 ;; input pointer $c: $d bytes
 ;; input value $d >= 32

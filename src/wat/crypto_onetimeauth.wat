@@ -1,3 +1,5 @@
+;; Author: Torsten Stüber
+
 ;; output pointer $mac: 16 bytes
 ;; input pointer $m: $bytes bytes
 ;; input value $bytes

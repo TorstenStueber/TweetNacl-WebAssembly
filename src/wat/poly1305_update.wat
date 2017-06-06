@@ -1,3 +1,5 @@
+;; Author: Torsten Stüber
+
 ;; polyobject
 ;;  pad: 0..15
 ;;  r: 16..35

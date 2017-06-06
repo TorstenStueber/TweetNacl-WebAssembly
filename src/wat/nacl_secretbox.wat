@@ -1,3 +1,5 @@
+;; Author: Torsten Stüber
+
 ;; output pointer $dest: $length bytes
 ;; input pointer $src: $length bytes
 ;; input value $length

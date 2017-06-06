@@ -1,3 +1,5 @@
+;; Author: Torsten Stüber
+
 ;; output $o: 32 bytes
 ;; input pointer $p: 16 bytes
 ;; input pointer $k: 32 bytes
