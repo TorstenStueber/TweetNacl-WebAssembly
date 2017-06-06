@@ -1,20 +1,28 @@
 const wast2wasm = require('wast2wasm');
 const fs = require('fs');
+const path = require('path');
 
-const wastCode = fs.readFileSync('./src/simple.wat').toString('utf8');
+const watSourceDirectory = './src/wat';
+const wasmOuputDirectory = './dist';
 
-wast2wasm(wastCode).then(output => {
-	const outputArray = [];
-	for (let i = 0; i < output.buffer.length; i++) {
-		outputArray.push(output.buffer[i]);
-	}
+const filesToAssemble = fs.readdirSync(watSourceDirectory).filter(
+	fileName => fileName.substring(fileName.length - 4) === '.wat'
+);
 
-	const jsContent = 'window.wasmCode = [' + outputArray.join(',') + ']';
+const codeArray = filesToAssemble.map(fileName => {
+	return fs.readFileSync(path.join(watSourceDirectory, fileName)).toString('utf8');
+});
 
-	const dir = './dist';
-	if (!fs.existsSync(dir)){
-		fs.mkdirSync(dir);
-	}
+const completeModule = '(module (import "js" "mem" (memory 1))' + 
+	codeArray.join('\n') + ')';
 
-	fs.writeFileSync('./dist/wasmCode.js', jsContent);
-})
+wast2wasm(completeModule)
+	.then(output => new Buffer(output.buffer).toString('base64'))
+	.then(output => {
+		if (!fs.existsSync(wasmOuputDirectory)) {
+			fs.mkdirSync(wasmOuputDirectory);
+		}
+
+		const jsContent = 'window.wasmCode = ' + JSON.stringify(output);
+		fs.writeFileSync(path.join(wasmOuputDirectory, 'wasmCode.js'), jsContent);
+	});

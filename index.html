@@ -4,40 +4,9 @@
 	<meta charset="utf-8">
 	<title>Wasm Testbed</title>
 	<script type="text/javascript" src='./dist/wasmCode.js'></script>
+	<script type="text/javascript" src='./src/nacl-fast.js'></script>
+	<script type="text/javascript" src='./src/index.js'></script>
 </head>
 <body>
-	<script>
-		WebAssembly.instantiate(getWasmCode(), createImportObject())
-			.then(results => run(results.instance));
-
-		function getWasmCode() {
-			const bytes = new Uint8Array(window.wasmCode);
-			return bytes.buffer;
-		}
-
-		function createImportObject() {
-			return {
-				imports: {
-					imported_func: function(arg) {
-						console.log(arg);
-					}
-				}
-			};
-		}
-
-		function run(instance) {
-			function sum(n) {let s = 0; for (let i = 0; i < n; i++) s = (s+i) % 12345; return s;}
-
-			console.time('wasm');
-			for (let i = 0; i < 1; i++)
-				console.log(instance.exports.accumulate(1000000000));
-			console.timeEnd('wasm');
-
-			console.time('js');
-			for (let i = 0; i < 1; i++)
-				console.log(sum(1000000000));
-			console.timeEnd('js');
-		}
-	</script>
 </body>
 </html>
