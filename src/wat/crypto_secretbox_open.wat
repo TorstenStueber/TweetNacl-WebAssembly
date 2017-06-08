@@ -5,7 +5,6 @@
 ;; input value $d >= 32
 ;; input pointer $n: 24 bytes
 ;; input pointer $k: 32 bytes
-;; input pointer $sigma: 16 bytes
 ;; alloc pointer $alloc: 152 bytes
 ;; return: 0 okay, -1 problem
 (func $crypto_secretbox_open (export "crypto_secretbox_open") 
@@ -14,7 +13,6 @@
 	(param $d i32)
 	(param $n i32)
 	(param $k i32)
-	(param $sigma i32)
 	(param $alloc i32)
 	(result i32)
 
@@ -28,7 +26,6 @@
 			(i32.const 32)
 			(get_local $n)
 			(get_local $k)
-			(get_local $sigma)
 			(get_local $alloc)
 			(call $crypto_stream)
 
@@ -47,7 +44,6 @@
 					(get_local $d)
 					(get_local $n)
 					(get_local $k)
-					(get_local $sigma)
 					(get_local $alloc)
 					(call $crypto_stream_xor)
 

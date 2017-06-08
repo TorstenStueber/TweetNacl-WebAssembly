@@ -5,7 +5,6 @@
 ;; input value $b
 ;; input pointer $n: 8 bytes
 ;; input pointer $k: 32 bytes
-;; input pointer $sigma: 16 bytes
 ;; alloc pointer $alloc: 80 bytes
 (func $crypto_stream_salsa20_xor (export "crypto_stream_salsa20_xor") 
 	(param $c i32)
@@ -13,7 +12,6 @@
 	(param $b i32)
 	(param $n i32)
 	(param $k i32)
-	(param $sigma i32)
 	(param $alloc i32)
 
 	(local $z i32)
@@ -33,7 +31,7 @@
 			(get_local $x)
 			(get_local $z)
 			(get_local $k)
-			(get_local $sigma)
+			(get_global $sigma)
 			(call $core_salsa20)
 
 			(i64.store offset=0 (get_local $c) (i64.xor (i64.load offset=0 (get_local $m)) (i64.load offset=0 (get_local $x))))
@@ -60,7 +58,7 @@
 			(get_local $x)
 			(get_local $z)
 			(get_local $k)
-			(get_local $sigma)
+			(get_global $sigma)
 			(call $core_salsa20)
 
 			(block $break2

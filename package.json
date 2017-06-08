@@ -8,7 +8,7 @@
   },
   "author": "Torsten Stüber",
   "license": "MIT",
-  "dependencies": {
+  "devDependencies": {
     "wast2wasm": "ewasm/wast2wasm#f8bc92099752fec64"
   }
 }

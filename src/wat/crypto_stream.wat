@@ -4,14 +4,12 @@
 ;; input value $d
 ;; input pointer $n: 24 bytes
 ;; input pointer $k: 32 bytes
-;; input pointer $sigma: 16 bytes
 ;; alloc pointer $alloc: 120 bytes
 (func $crypto_stream (export "crypto_stream") 
 	(param $c i32)
 	(param $d i32)
 	(param $n i32)
 	(param $k i32)
-	(param $sigma i32)
 	(param $alloc i32)
 	
 	(local $s i32)
@@ -22,7 +20,7 @@
 	(get_local $s)
 	(get_local $n)
 	(get_local $k)
-	(get_local $sigma)
+	(get_global $sigma)
 	(call $core_hsalsa20) ;; core_hsalsa20
 
 	(i64.store (get_local $sn) (i64.load offset=16 (get_local $n)))
@@ -31,7 +29,6 @@
 	(get_local $d)
 	(get_local $sn)
 	(get_local $s)
-	(get_local $sigma)
 	(i32.add (i32.const 40) (get_local $alloc))
 	(call $crypto_stream_salsa20) ;; crypto_stream_salsa20
 )

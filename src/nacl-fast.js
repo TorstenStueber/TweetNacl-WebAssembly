@@ -2113,7 +2113,7 @@ nacl.lowlevel = {
   crypto_sign: crypto_sign,
   crypto_sign_keypair: crypto_sign_keypair,
   crypto_sign_open: crypto_sign_open,
-
+  
   crypto_secretbox_KEYBYTES: crypto_secretbox_KEYBYTES,
   crypto_secretbox_NONCEBYTES: crypto_secretbox_NONCEBYTES,
   crypto_secretbox_ZEROBYTES: crypto_secretbox_ZEROBYTES,
