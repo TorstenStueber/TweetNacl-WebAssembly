@@ -704,11 +704,45 @@
 			getPerformanceString(['wasm', 'js']));
 	}
 
+	function testtest() {
+		const d = 128;
+		const h = new Uint8Array([216, 178, 41, 175, 126, 145, 203, 8, 201, 178, 81, 77, 105, 192, 184, 252, 144, 169, 230, 127, 176, 109, 229, 188, 110, 242, 111, 225, 71, 248, 86, 125, 190, 129, 250, 70, 180, 21, 73, 210, 71, 70, 19, 27, 145, 100, 56, 255, 187, 231, 97, 154, 142, 65, 16, 178, 68, 132, 25, 141, 30, 223, 141, 79]);
+		const m = new Uint8Array([51, 179, 132, 43, 99, 45, 36, 74, 255, 49, 194, 103, 52, 214, 37, 104, 215, 30, 7, 78, 155, 135, 197, 22, 134, 115, 76, 33, 251, 33, 117, 41, 192, 42, 178, 67, 145, 110, 163, 82, 188, 100, 194, 153, 209, 211, 226, 202, 38, 252, 93, 145, 103, 27, 68, 73, 74, 173, 97, 213, 136, 255, 214, 44, 26, 200, 102, 235, 20, 199, 51, 155, 143, 194, 251, 11, 173, 7, 185, 83, 178, 10, 142, 58, 5, 111, 81, 24, 172, 179, 81, 78, 20, 58, 210, 141, 68, 15, 213, 225, 78, 4, 193, 118, 2, 38, 223, 156, 122, 159, 89, 202, 48, 198, 34, 117, 167, 27, 60, 57, 189, 231, 164, 114, 234, 170, 247, 159]);
+		//fillRandom(h);
+		//fillRandom(m);
+
+		const c = window.nacl_wasm.test(h, m);
+		
+		const hh = new Int32Array(8);
+		const hl = new Int32Array(8);
+
+		for (let i = 0; i < 8; i++) {
+			hl[i] = h[8*i] + (h[8*i + 1] << 8) + (h[8*i + 2] << 16) + (h[8*i + 3] << 24);
+			hh[i] = h[8*i + 4] + (h[8*i + 5] << 8) + (h[8*i + 6] << 16) + (h[8*i + 7] << 24);
+		}
+
+		window.nacl_wasm.test2(hh, hl, m, m.length);
+
+		const h2 = new Uint8Array(64);
+		for (let i = 0; i < 8; i++) {
+			h2[8*i] = hl[i] & 0xff;
+			h2[8*i + 1] = (hl[i] >>> 8) & 0xff;
+			h2[8*i + 2] = (hl[i] >>> 16) & 0xff;
+			h2[8*i + 3] = (hl[i] >>> 24) & 0xff;
+			h2[8*i + 4] = hh[i] & 0xff;
+			h2[8*i + 5] = (hh[i] >>> 8) & 0xff;
+			h2[8*i + 6] = (hh[i] >>> 16) & 0xff;
+			h2[8*i + 7] = (hh[i] >>> 24) & 0xff;
+		}
+
+		console.log('test test',
+			compareArrays(h, h2) ? 'Equal' : 'Not equal')
+	}
 
 	window.nacl_wasm.instanceReady()
 		.then(() => {
 			//low level
-			testCryptoCoreHSalsa20();
+			/*testCryptoCoreHSalsa20();
 			testCryptoStreamSalsa20();
 			testCryptoStreamSalsa20Xor();
 			testCryptoStream();
@@ -736,6 +770,8 @@
 			testNaclBoxAfter();
 			testNaclBoxOpen();
 			testNaclBoxKeyPair();
-			testNaclBoxKeyPairFromSecretKey();
+			testNaclBoxKeyPairFromSecretKey();*/
+
+			testtest();
 		});
 })();
