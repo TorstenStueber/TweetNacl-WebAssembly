@@ -33,7 +33,8 @@
 	function getPerformanceString(names) {
 		let durationOfFirst;
 		const performanceString = names.map((name, index) => {
-			const duration = performance.getEntriesByName(name + 'Measure')[0].duration;
+			const entries = performance.getEntriesByName(name + 'Measure');
+			const duration = entries[entries.length - 1].duration;
 			if (index === 0) {
 				durationOfFirst = duration;
 			}
@@ -44,8 +45,8 @@
 			) ;
 		}).join('; ');
 
-		performance.clearMarks();
-		performance.clearMeasures();
+		//performance.clearMarks();
+		//performance.clearMeasures();
 
 		return '(' + performanceString + ')';
 	}
@@ -540,17 +541,23 @@
 		const m = new Uint8Array(d);
 		fillRandom(m);
 
-		performance.mark('wasmMark');
-		const out = window.nacl_wasm.lowlevel.crypto_hash(m);
-		performance.measure('wasmMeasure', 'wasmMark');
+		performance.mark('native_Mark');
+		window.crypto.subtle.digest({name: 'SHA-512'}, m)
+			.then(hash => {
+				performance.measure('native_Measure', 'nativeMark');
+				performance.mark('wasmMark');
+				const out = window.nacl_wasm.lowlevel.crypto_hash(m);
+				performance.measure('wasmMeasure', 'wasmMark');
 
-		const out2 = new Uint8Array(64);
-		performance.mark('jsMark');
-		window.nacl.lowlevel.crypto_hash(out2, m, m.length);
-		performance.measure('jsMeasure', 'jsMark');
+				const out2 = new Uint8Array(64);
+				performance.mark('jsMark');
+				window.nacl.lowlevel.crypto_hash(out2, m, m.length);
+				performance.measure('jsMeasure', 'jsMark');
 
-		console.log('test crypto_hash',
-			compareArrays(out, out2) ? 'Equal' : 'Not equal', getPerformanceString(['wasm', 'js']));
+				console.log('test crypto_hash',
+					compareArrays(out, out2) && compareArrays(out, new Uint8Array(hash))? 'Equal' : 'Not equal', 
+					getPerformanceString(['wasm', 'native_', 'js']));
+			})
 	}
 
 	function testNaclScalarMult() {
@@ -722,57 +729,28 @@
 			getPerformanceString(['wasm', 'js']));
 	}
 
-	function testtest() {
+	function testNaclHash() {
 		const d = 23423323;
-		const h = new Uint8Array(64);
 		const m = new Uint8Array(d);
-		fillRandom(h);
 		fillRandom(m);
 
 		performance.mark('wasmMark');
-		const c = window.nacl_wasm.test(h, m);
+		const out = window.nacl_wasm.hash(m);
 		performance.measure('wasmMeasure', 'wasmMark');
-		
-		const hh = new Int32Array(8);
-		const hl = new Int32Array(8);
-
-		for (let i = 0; i < 8; i++) {
-			hl[i] = h[8*i] + (h[8*i + 1] << 8) + (h[8*i + 2] << 16) + (h[8*i + 3] << 24);
-			hh[i] = h[8*i + 4] + (h[8*i + 5] << 8) + (h[8*i + 6] << 16) + (h[8*i + 7] << 24);
-		}
 
 		performance.mark('jsMark');
-		window.nacl_wasm.test2(hh, hl, m, m.length);
+		const out2 = window.nacl.hash(m);
 		performance.measure('jsMeasure', 'jsMark');
 
-		const h2 = new Uint8Array(64);
-		for (let i = 0; i < 8; i++) {
-			h2[8*i] = hl[i] & 0xff;
-			h2[8*i + 1] = (hl[i] >>> 8) & 0xff;
-			h2[8*i + 2] = (hl[i] >>> 16) & 0xff;
-			h2[8*i + 3] = (hl[i] >>> 24) & 0xff;
-			h2[8*i + 4] = hh[i] & 0xff;
-			h2[8*i + 5] = (hh[i] >>> 8) & 0xff;
-			h2[8*i + 6] = (hh[i] >>> 16) & 0xff;
-			h2[8*i + 7] = (hh[i] >>> 24) & 0xff;
-		}
-
-		performance.mark('nativeMark');
-		window.crypto.subtle.digest({name: 'SHA-512'}, m)
-			.then(hash => {
-				performance.measure('nativeMeasure', 'nativeMark');
-				console.log('test test',
-					compareArrays(c, h2) ? 'Equal' : 'Not equal',
-					getPerformanceString(['wasm', 'js', 'native']))
-			})
-
-		
+		console.log('test nacl_hash',
+			compareArrays(out, out2) ? 'Equal' : 'Not equal', 
+			getPerformanceString(['wasm', 'js']));
 	}
 
 	window.nacl_wasm.instanceReady()
 		.then(() => {
 			//low level
-			/*testCryptoCoreHSalsa20();
+			testCryptoCoreHSalsa20();
 			testCryptoStreamSalsa20();
 			testCryptoStreamSalsa20Xor();
 			testCryptoStream();
@@ -789,6 +767,7 @@
 			testCryptoBox();
 			testCryptoBoxOpen();
 			testCryptoBoxKeypair();
+			testCryptoHash();
 
 			//high level
 			testNaclSecretbox();
@@ -800,9 +779,7 @@
 			testNaclBoxAfter();
 			testNaclBoxOpen();
 			testNaclBoxKeyPair();
-			testNaclBoxKeyPairFromSecretKey();*/
-
-			//testtest();
-			testCryptoHash();
+			testNaclBoxKeyPairFromSecretKey();
+			testNaclHash();
 		});
 })();
