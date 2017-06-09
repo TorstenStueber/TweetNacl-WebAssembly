@@ -33,7 +33,6 @@
 		(loop
 			(br_if 1(i32.lt_u (get_local $n) (i32.const 128)))
 
-
 			(set_local $i (i32.const 0))
 			(set_local $j (get_local $m))
 			(set_local $k (get_local $w))
@@ -75,7 +74,7 @@
 			(set_local $K (get_global $K))
 			(block
 				(loop
-					(br 1 (i32.eq (get_local $i) (i32.const 80)))
+					(br_if 1 (i32.eq (get_local $i) (i32.const 80)))
 
 					(set_local $b0 (get_local $a0))
 					(set_local $b1 (get_local $a1))
@@ -143,53 +142,423 @@
 					(if (i32.eq (i32.and (get_local $i) (i32.const 0xf)) (i32.const 15))
 						(then
 
-							(set_local $j (i32.const 0))
-							(set_local $k (get_local $w))
-							(block
-								(loop
-									(br_if 1 (i32.eq (get_local $j) (i32.const 16)))
-
-									(set_local $tmp1 (i64.load (i32.add (get_local $w) (i32.shl 
-										(i32.and (i32.add (get_local $j) (i32.const 9)) (i32.const 0xf)) 
-										(i32.const 3)
-									))))
-									(set_local $tmp2 (i64.load (i32.add (get_local $w) (i32.shl 
-										(i32.and (i32.add (get_local $j) (i32.const 1)) (i32.const 0xf)) 
-										(i32.const 3)
-									))))
-									(set_local $tmp3 (i64.load (i32.add (get_local $w) (i32.shl 
-										(i32.and (i32.add (get_local $j) (i32.const 14)) (i32.const 0xf)) 
-										(i32.const 3)
-									))))
-
-									(i64.store (get_local $k) (i64.add
-										(i64.add
-											(i64.load (get_local $k))
-											(get_local $tmp1)
-										)
-										(i64.add
-											(i64.xor
-												(i64.xor
-													(i64.rotr (get_local $tmp2) (i64.const 1))
-													(i64.rotr (get_local $tmp2) (i64.const 8))
-												)
-												(i64.shr_u (get_local $tmp2) (i64.const 7))
-											)
-											(i64.xor
-												(i64.xor
-													(i64.rotr (get_local $tmp3) (i64.const 19))
-													(i64.rotr (get_local $tmp3) (i64.const 61))
-												)
-												(i64.shr_u (get_local $tmp3) (i64.const 6))
-											)
-										)
-									))
-
-									(set_local $j (i32.add (get_local $j) (i32.const 1)))
-									(set_local $k (i32.add (get_local $k) (i32.const 8)))
-									(br 0)
+							(set_local $tmp1 (i64.load offset=72 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=8 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=112 (get_local $w)))
+							(i64.store offset=0 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=0 (get_local $w))
+									(get_local $tmp1)
 								)
-							)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=80 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=16 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=120 (get_local $w)))
+							(i64.store offset=8 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=8 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=88 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=24 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=0 (get_local $w)))
+							(i64.store offset=16 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=16 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=96 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=32 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=8 (get_local $w)))
+							(i64.store offset=24 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=24 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=104 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=40 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=16 (get_local $w)))
+							(i64.store offset=32 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=32 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=112 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=48 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=24 (get_local $w)))
+							(i64.store offset=40 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=40 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=120 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=56 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=32 (get_local $w)))
+							(i64.store offset=48 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=48 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=0 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=64 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=40 (get_local $w)))
+							(i64.store offset=56 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=56 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=8 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=72 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=48 (get_local $w)))
+							(i64.store offset=64 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=64 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=16 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=80 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=56 (get_local $w)))
+							(i64.store offset=72 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=72 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=24 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=88 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=64 (get_local $w)))
+							(i64.store offset=80 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=80 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=32 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=96 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=72 (get_local $w)))
+							(i64.store offset=88 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=88 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=40 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=104 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=80 (get_local $w)))
+							(i64.store offset=96 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=96 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=48 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=112 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=88 (get_local $w)))
+							(i64.store offset=104 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=104 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=56 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=120 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=96 (get_local $w)))
+							(i64.store offset=112 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=112 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							(set_local $tmp1 (i64.load offset=64 (get_local $w)))
+							(set_local $tmp2 (i64.load offset=0 (get_local $w)))
+							(set_local $tmp3 (i64.load offset=104 (get_local $w)))
+							(i64.store offset=120 (get_local $w) (i64.add
+								(i64.add
+									(i64.load offset=120 (get_local $w))
+									(get_local $tmp1)
+								)
+								(i64.add
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp2) (i64.const 1))
+											(i64.rotr (get_local $tmp2) (i64.const 8))
+										)
+										(i64.shr_u (get_local $tmp2) (i64.const 7))
+									)
+									(i64.xor
+										(i64.xor
+											(i64.rotr (get_local $tmp3) (i64.const 19))
+											(i64.rotr (get_local $tmp3) (i64.const 61))
+										)
+										(i64.shr_u (get_local $tmp3) (i64.const 6))
+									)
+								)
+							))
+
+							
 
 						)
 					)
@@ -226,7 +595,7 @@
 			)))
 
 			(set_local $m (i32.add (i32.const 128) (get_local $m)))
-			(set_local $n (i32.sub (i32.const 128) (get_local $n)))
+			(set_local $n (i32.sub (get_local $n) (i32.const 128)))
 			(br 0)
 		)
 	)

@@ -535,6 +535,24 @@
 		console.log('test crypto_box_keypair', 'Not comparable', getPerformanceString(['wasm', 'js']));
 	}
 
+	function testCryptoHash() {
+		const d = 23423323;
+		const m = new Uint8Array(d);
+		fillRandom(m);
+
+		performance.mark('wasmMark');
+		const out = window.nacl_wasm.lowlevel.crypto_hash(m);
+		performance.measure('wasmMeasure', 'wasmMark');
+
+		const out2 = new Uint8Array(64);
+		performance.mark('jsMark');
+		window.nacl.lowlevel.crypto_hash(out2, m, m.length);
+		performance.measure('jsMeasure', 'jsMark');
+
+		console.log('test crypto_hash',
+			compareArrays(out, out2) ? 'Equal' : 'Not equal', getPerformanceString(['wasm', 'js']));
+	}
+
 	function testNaclScalarMult() {
 		const n = new Uint8Array(32);
 		const p = new Uint8Array(32);
@@ -705,13 +723,15 @@
 	}
 
 	function testtest() {
-		const d = 128;
-		const h = new Uint8Array([216, 178, 41, 175, 126, 145, 203, 8, 201, 178, 81, 77, 105, 192, 184, 252, 144, 169, 230, 127, 176, 109, 229, 188, 110, 242, 111, 225, 71, 248, 86, 125, 190, 129, 250, 70, 180, 21, 73, 210, 71, 70, 19, 27, 145, 100, 56, 255, 187, 231, 97, 154, 142, 65, 16, 178, 68, 132, 25, 141, 30, 223, 141, 79]);
-		const m = new Uint8Array([51, 179, 132, 43, 99, 45, 36, 74, 255, 49, 194, 103, 52, 214, 37, 104, 215, 30, 7, 78, 155, 135, 197, 22, 134, 115, 76, 33, 251, 33, 117, 41, 192, 42, 178, 67, 145, 110, 163, 82, 188, 100, 194, 153, 209, 211, 226, 202, 38, 252, 93, 145, 103, 27, 68, 73, 74, 173, 97, 213, 136, 255, 214, 44, 26, 200, 102, 235, 20, 199, 51, 155, 143, 194, 251, 11, 173, 7, 185, 83, 178, 10, 142, 58, 5, 111, 81, 24, 172, 179, 81, 78, 20, 58, 210, 141, 68, 15, 213, 225, 78, 4, 193, 118, 2, 38, 223, 156, 122, 159, 89, 202, 48, 198, 34, 117, 167, 27, 60, 57, 189, 231, 164, 114, 234, 170, 247, 159]);
-		//fillRandom(h);
-		//fillRandom(m);
+		const d = 23423323;
+		const h = new Uint8Array(64);
+		const m = new Uint8Array(d);
+		fillRandom(h);
+		fillRandom(m);
 
+		performance.mark('wasmMark');
 		const c = window.nacl_wasm.test(h, m);
+		performance.measure('wasmMeasure', 'wasmMark');
 		
 		const hh = new Int32Array(8);
 		const hl = new Int32Array(8);
@@ -721,7 +741,9 @@
 			hh[i] = h[8*i + 4] + (h[8*i + 5] << 8) + (h[8*i + 6] << 16) + (h[8*i + 7] << 24);
 		}
 
+		performance.mark('jsMark');
 		window.nacl_wasm.test2(hh, hl, m, m.length);
+		performance.measure('jsMeasure', 'jsMark');
 
 		const h2 = new Uint8Array(64);
 		for (let i = 0; i < 8; i++) {
@@ -735,8 +757,16 @@
 			h2[8*i + 7] = (hh[i] >>> 24) & 0xff;
 		}
 
-		console.log('test test',
-			compareArrays(h, h2) ? 'Equal' : 'Not equal')
+		performance.mark('nativeMark');
+		window.crypto.subtle.digest({name: 'SHA-512'}, m)
+			.then(hash => {
+				performance.measure('nativeMeasure', 'nativeMark');
+				console.log('test test',
+					compareArrays(c, h2) ? 'Equal' : 'Not equal',
+					getPerformanceString(['wasm', 'js', 'native']))
+			})
+
+		
 	}
 
 	window.nacl_wasm.instanceReady()
@@ -772,6 +802,7 @@
 			testNaclBoxKeyPair();
 			testNaclBoxKeyPairFromSecretKey();*/
 
-			testtest();
+			//testtest();
+			testCryptoHash();
 		});
 })();

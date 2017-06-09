@@ -424,6 +424,23 @@
 		return [crypto_scalarmult_base(x), x];
 	}
 
+	//m: Uint8Array[]
+	//return: Uint8Array[64]
+	function crypto_hash(m) {
+		const indexes = copyToWasmMemory({
+			out: {paddingBefore: 64},
+			m: {array: m},
+			alloc: {paddingBefore: 384}
+		});
+		const result = wasmInstance.exports.crypto_hash(
+			indexes.out,
+			indexes.m,
+			m.length,
+			indexes.alloc
+		);
+		return new Uint8Array(wasmMemory.buffer.slice(indexes.out, indexes.out + 64));
+	}
+
 	//n: integer
 	//return: Uint8Array[n]
 	function nacl_randomBytes(n) {
@@ -592,7 +609,7 @@
 		crypto_box: crypto_box,
 		crypto_box_open: crypto_box_open,
 		crypto_box_keypair: crypto_box_keypair,
-		//crypto_hash: crypto_hash,
+		crypto_hash: crypto_hash,
 		//crypto_sign: crypto_sign,
 		//crypto_sign_keypair: crypto_sign_keypair,
 		//crypto_sign_open: crypto_sign_open,
@@ -713,7 +730,7 @@ nacl.test2 = function(hh, hl, m, n) {
 
   var pos = 0;
   while (n >= 128) {
-    /*for (i = 0; i < 16; i++) {
+    for (i = 0; i < 16; i++) {
       j = 8 * i + pos;
       wh[i] = (m[j+0] << 24) | (m[j+1] << 16) | (m[j+2] << 8) | m[j+3];
       wl[i] = (m[j+4] << 24) | (m[j+5] << 16) | (m[j+6] << 8) | m[j+7];
@@ -886,7 +903,7 @@ nacl.test2 = function(hh, hl, m, n) {
           wl[j] = (a & 0xffff) | (b << 16);
         }
       }
-	}*/
+    }
 
     // add
     h = ah0;
@@ -1054,17 +1071,13 @@ nacl.test = function(h, m) {
 			m: {array: m},
 			alloc: {paddingBefore: 128}
 		});
-		var w = new Uint8Array(wasmMemory.buffer, indexes.alloc, 128);
-		var hh = new Uint8Array(wasmMemory.buffer, indexes.h, h.length);
 		wasmInstance.exports.crypto_hashblocks(
 			indexes.h,
 			indexes.m,
 			m.length,
 			indexes.alloc
 		);
-		console.log(h.subarray(0, 8))
-		console.log(hh.subarray(0, 8))
-		return new Uint8Array(wasmMemory.buffer.slice(indexes.h, indexes.h + 64));
+		return new Uint8Array(wasmMemory.buffer.slice(indexes.h, indexes.h + h.length));
 	}
 
 	/*nacl.sign = (msg, secretKey) => {
