@@ -1364,23 +1364,165 @@
 		r[31] ^= par25519(tx) << 7;
 	}
 
-	nacl.t1 = add;
-	nacl.t2 = function(p, q) {
+	function inv25519(o, i) {
+		var c = gf();
+		var a;
+		for (a = 0; a < 16; a++) c[a] = i[a];
+		for (a = 253; a >= 0; a--) {
+			S(c, c);
+			if(a !== 2 && a !== 4) M(c, c, i);
+		}
+		for (a = 0; a < 16; a++) o[a] = c[a];
+	}
+
+	var gf0 = gf(),
+		gf1 = gf([1]),
+		_121665 = gf([0xdb41, 1]),
+		D = gf([0x78a3, 0x1359, 0x4dca, 0x75eb, 0xd8ab, 0x4141, 0x0a4d, 0x0070, 0xe898, 0x7779, 0x4079, 0x8cc7, 0xfe73, 0x2b6f, 0x6cee, 0x5203]),
+		X = gf([0xd51a, 0x8f25, 0x2d60, 0xc956, 0xa7b2, 0x9525, 0xc760, 0x692c, 0xdc5c, 0xfdd6, 0xe231, 0xc0a4, 0x53fe, 0xcd6e, 0x36d3, 0x2169]),
+		Y = gf([0x6658, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666, 0x6666]),
+		I = gf([0xa0b0, 0x4a0e, 0x1b27, 0xc4ee, 0xe478, 0xad2f, 0x1806, 0x2f43, 0xd7a7, 0x3dfb, 0x0099, 0x2b4d, 0xdf0b, 0x4fc1, 0x2480, 0x2b83]);
+
+	function scalarmult(p, q, s) {
+		var b, i;
+		set25519(p[0], gf0);
+		set25519(p[1], gf1);
+		set25519(p[2], gf1);
+		set25519(p[3], gf0);
+		for (i = 255; i >= 0; --i) {
+			b = (s[(i/8)|0] >> (i&7)) & 1;
+			cswap(p, q, b);
+			add(q, p);
+			add(p, p);
+			cswap(p, q, b);
+		}
+	}
+
+	function scalarbase(p, s) {
+		var q = [gf(), gf(), gf(), gf()];
+		set25519(q[0], X);
+		set25519(q[1], Y);
+		set25519(q[2], gf1);
+		M(q[3], X, Y);
+		scalarmult(p, q, s);
+	}
+
+	var L = new Float64Array([0xed, 0xd3, 0xf5, 0x5c, 0x1a, 0x63, 0x12, 0x58, 0xd6, 0x9c, 0xf7, 0xa2, 0xde, 0xf9, 0xde, 0x14, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0x10]);
+
+	function modL(r, x) {
+		var carry, i, j, k;
+		for (i = 63; i >= 32; --i) {
+			carry = 0;
+			for (j = i - 32, k = i - 12; j < k; ++j) {
+				x[j] += carry - 16 * x[i] * L[j - (i - 32)];
+				carry = (x[j] + 128) >> 8;
+				x[j] -= carry * 256;
+			}
+			x[j] += carry;
+			x[i] = 0;
+		}
+		carry = 0;
+		for (j = 0; j < 32; j++) {
+			x[j] += carry - (x[31] >> 4) * L[j];
+			carry = x[j] >> 8;
+			x[j] &= 255;
+		}
+		for (j = 0; j < 32; j++) x[j] -= carry * L[j];
+		for (i = 0; i < 32; i++) {
+			x[i+1] += x[i] >> 8;
+			r[i] = x[i] & 255;
+		}
+	}
+
+	function reduce(r) {
+		var x = new Float64Array(64), i;
+		for (i = 0; i < 64; i++) x[i] = r[i];
+		for (i = 0; i < 64; i++) r[i] = 0;
+		modL(r, x);
+	}
+
+	function neq25519(a, b) {
+		var c = new Uint8Array(32), d = new Uint8Array(32);
+		pack25519(c, a);
+		pack25519(d, b);
+		return c_verify_32(c, 0, d, 0);
+	}
+
+	function vn(x, xi, y, yi, n) {
+		var i,d = 0;
+		for (i = 0; i < n; i++) d |= x[xi+i]^y[yi+i];
+		return (1 & ((d - 1) >>> 8)) - 1;
+	}
+
+	function c_verify_16(x, xi, y, yi) {
+		return vn(x,xi,y,yi,16);
+	}
+
+	function c_verify_32(x, xi, y, yi) {
+		return vn(x,xi,y,yi,32);
+	}
+
+	function unpackneg(r, p) {
+		var t = gf(), chk = gf(), num = gf(),
+			den = gf(), den2 = gf(), den4 = gf(),
+			den6 = gf();
+
+		set25519(r[2], gf1);
+		unpack25519(r[1], p);
+		S(num, r[1]);
+		M(den, num, D);
+		Z(num, num, r[2]);
+		A(den, r[2], den);
+
+		S(den2, den);
+		S(den4, den2);
+		M(den6, den4, den2);
+		M(t, den6, num);
+		M(t, t, den);
+
+		pow2523(t, t);
+		M(t, t, num);
+		M(t, t, den);
+		M(t, t, den);
+		M(r[0], t, den);
+
+		S(chk, r[0]);
+		M(chk, chk, den);
+		if (neq25519(chk, num)) M(r[0], r[0], I);
+
+		S(chk, r[0]);
+		M(chk, chk, den);
+		if (neq25519(chk, num)) return -1;
+
+		if (par25519(r[0]) === (p[31]>>7)) Z(r[0], gf0, r[0]);
+
+		M(r[3], r[0], r[1]);
+		return 0;
+	}
+
+	function unpack25519(o, n) {
+		var i;
+		for (i = 0; i < 16; i++) o[i] = n[2*i] + (n[2*i+1] << 8);
+		o[15] &= 0x7fff;
+	}
+
+	nacl.t1 = unpackneg;
+	nacl.t2 = function(p) {
 		const indexes = copyToWasmMemory({
+			r: {paddingBefore: 512},
 			p: {array: p},
-			q: {array: q},
-			alloc: {paddingBefore: 1152},
+			alloc: {paddingBefore: 896},
 		});
-		wasmInstance.exports.add(
+		const res = wasmInstance.exports.unpackneg(
+			indexes.r,
 			indexes.p,
-			indexes.q,
 			indexes.alloc
 		);
-		return new Uint8Array(
+		return [res, new Uint8Array(
 			wasmMemory.buffer,
-			indexes.p,
+			indexes.r,
 			512,
-		);
+		)];
 	}
 
 	/*

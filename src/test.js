@@ -794,20 +794,47 @@
 					i[j * 8 + 1] = (f0[j] >> 8) & 0xff;
 					i[j * 8 + 2] = (f0[j] >> 16) & 0xff;
 					i[j * 8 + 3] = (f0[j] >> 24) & 0xff;
+					i[j * 8 + 4] = f0[j] < 0 ? 255 : 0;
+					i[j * 8 + 5] = f0[j] < 0 ? 255 : 0;
+					i[j * 8 + 6] = f0[j] < 0 ? 255 : 0;
+					i[j * 8 + 7] = f0[j] < 0 ? 255 : 0;
 					i[j * 8 + 128] = f1[j] & 0xff;
 					i[j * 8 + 1 + 128] = (f1[j] >> 8) & 0xff;
 					i[j * 8 + 2 + 128] = (f1[j] >> 16) & 0xff;
 					i[j * 8 + 3 + 128] = (f1[j] >> 24) & 0xff;
+					i[j * 8 + 4 + 128] = f1[j] < 0 ? 255 : 0;
+					i[j * 8 + 5 + 128] = f1[j] < 0 ? 255 : 0;
+					i[j * 8 + 6 + 128] = f1[j] < 0 ? 255 : 0;
+					i[j * 8 + 7 + 128] = f1[j] < 0 ? 255 : 0;
 					i[j * 8 + 256] = f2[j] & 0xff;
 					i[j * 8 + 1 + 256] = (f2[j] >> 8) & 0xff;
 					i[j * 8 + 2 + 256] = (f2[j] >> 16) & 0xff;
 					i[j * 8 + 3 + 256] = (f2[j] >> 24) & 0xff;
+					i[j * 8 + 4 + 256] = f2[j] < 0 ? 255 : 0;
+					i[j * 8 + 5 + 256] = f2[j] < 0 ? 255 : 0;
+					i[j * 8 + 6 + 256] = f2[j] < 0 ? 255 : 0;
+					i[j * 8 + 7 + 256] = f2[j] < 0 ? 255 : 0;
 					i[j * 8 + 384] = f3[j] & 0xff;
 					i[j * 8 + 1 + 384] = (f3[j] >> 8) & 0xff;
 					i[j * 8 + 2 + 384] = (f3[j] >> 16) & 0xff;
 					i[j * 8 + 3 + 384] = (f3[j] >> 24) & 0xff;
+					i[j * 8 + 4 + 384] = f3[j] < 0 ? 255 : 0;
+					i[j * 8 + 5 + 384] = f3[j] < 0 ? 255 : 0;
+					i[j * 8 + 6 + 384] = f3[j] < 0 ? 255 : 0;
+					i[j * 8 + 7 + 384] = f3[j] < 0 ? 255 : 0;
 				}
 				return i;
+			}
+
+			function ff2f(f0, f1, f2, f3) {
+				const f = new Float64Array(64);
+				for (let j = 0; j < 16; j++) {
+					f[j] = f0[j];
+					f[j + 16] = f1[j];
+					f[j + 32] = f2[j];
+					f[j + 48] = f3[j];
+				}
+				return f;
 			}
 
 			const fi0 = new Float64Array(16);
@@ -818,6 +845,9 @@
 			const fo1 = new Float64Array(16);
 			const fo2 = new Float64Array(16);
 			const fo3 = new Float64Array(16);
+			const s = new Uint8Array(64);
+			
+			for (let i = 0; i < s.length; i++) {s[i] = Math.floor(Math.random() * 256);}
 
 			for (let i = 0; i < 16; i++) {
 				fi0[i] = Math.floor(Math.random() * 65536);
@@ -832,14 +862,21 @@
 			const ii = ff2ii(fi0, fi1, fi2, fi3);
 			const io = ff2ii(fo0, fo1, fo2, fo3);
 
+			const fff = ff2f(fo0, fo1, fo2, fo3);
+
+			const i0 = f2i(fi0);
+			const i1 = f2i(fi1);
+
+
 			performance.mark('wasmMark');
-			const out = window.nacl_wasm.t2(io, ii);
+			const [res, out] = window.nacl_wasm.t2(s);
 			performance.measure('wasmMeasure', 'wasmMark');
 
 			performance.mark('jsMark');
-			window.nacl_wasm.t1([fo0, fo1, fo2, fo3], [fi0, fi1, fi2, fi3]);
+			const out2 = window.nacl_wasm.t1([fo0, fo1, fo2, fo3], s);
 			performance.measure('jsMeasure', 'jsMark');
 
+			console.log(res, out2);
 			console.log('test',
 				compareArrays(out, ff2ii(fo0, fo1, fo2, fo3)) ? 'Equal' : 'Not equal', 
 				getPerformanceString(['wasm', 'js']));
