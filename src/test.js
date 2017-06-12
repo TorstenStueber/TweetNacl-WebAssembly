@@ -9,6 +9,7 @@
 		const length = arr1.length;
 		for (let i = 0; i < length; i++) {
 			if (arr1[i] !== arr2[i]) {
+				console.log(i, arr1[i], arr2[i]);
 				console.log(arr1);
 				console.log(arr2);
 				return false;
@@ -20,13 +21,6 @@
 	function fillRandom(array) {
 		for (let i = 0; i < array.length; i++) {
 			array[i] = Math.floor(Math.random() * 256);
-		}
-	}
-
-	//experimental
-	function fillFRandom(array) {
-		for (let i = 0; i < array.length; i++) {
-			array[i] = Math.floor(Math.random() * 10000 - 5000);
 		}
 	}
 
@@ -749,7 +743,7 @@
 
 	window.nacl_wasm.instanceReady()
 		.then(() => {
-			//low level
+			/*//low level
 			testCryptoCoreHSalsa20();
 			testCryptoStreamSalsa20();
 			testCryptoStreamSalsa20Xor();
@@ -780,6 +774,74 @@
 			testNaclBoxOpen();
 			testNaclBoxKeyPair();
 			testNaclBoxKeyPairFromSecretKey();
-			testNaclHash();
+			testNaclHash();*/
+
+			function f2i(f) {
+				const i = new Uint8Array(128);
+				for (let j = 0; j < 16; j++) {
+					i[j * 8] = f[j] & 0xff;
+					i[j * 8 + 1] = (f[j] >> 8) & 0xff;
+					i[j * 8 + 2] = (f[j] >> 16) & 0xff;
+					i[j * 8 + 3] = (f[j] >> 24) & 0xff;
+				}
+				return i;
+			}
+
+			function ff2ii(f0, f1, f2, f3) {
+				const i = new Uint8Array(512);
+				for (let j = 0; j < 16; j++) {
+					i[j * 8] = f0[j] & 0xff;
+					i[j * 8 + 1] = (f0[j] >> 8) & 0xff;
+					i[j * 8 + 2] = (f0[j] >> 16) & 0xff;
+					i[j * 8 + 3] = (f0[j] >> 24) & 0xff;
+					i[j * 8 + 128] = f1[j] & 0xff;
+					i[j * 8 + 1 + 128] = (f1[j] >> 8) & 0xff;
+					i[j * 8 + 2 + 128] = (f1[j] >> 16) & 0xff;
+					i[j * 8 + 3 + 128] = (f1[j] >> 24) & 0xff;
+					i[j * 8 + 256] = f2[j] & 0xff;
+					i[j * 8 + 1 + 256] = (f2[j] >> 8) & 0xff;
+					i[j * 8 + 2 + 256] = (f2[j] >> 16) & 0xff;
+					i[j * 8 + 3 + 256] = (f2[j] >> 24) & 0xff;
+					i[j * 8 + 384] = f3[j] & 0xff;
+					i[j * 8 + 1 + 384] = (f3[j] >> 8) & 0xff;
+					i[j * 8 + 2 + 384] = (f3[j] >> 16) & 0xff;
+					i[j * 8 + 3 + 384] = (f3[j] >> 24) & 0xff;
+				}
+				return i;
+			}
+
+			const fi0 = new Float64Array(16);
+			const fi1 = new Float64Array(16);
+			const fi2 = new Float64Array(16);
+			const fi3 = new Float64Array(16);
+			const fo0 = new Float64Array(16);
+			const fo1 = new Float64Array(16);
+			const fo2 = new Float64Array(16);
+			const fo3 = new Float64Array(16);
+
+			for (let i = 0; i < 16; i++) {
+				fi0[i] = Math.floor(Math.random() * 65536);
+				fi1[i] = Math.floor(Math.random() * 65536);
+				fi2[i] = Math.floor(Math.random() * 65536);
+				fi3[i] = Math.floor(Math.random() * 65536);
+				fo0[i] = Math.floor(Math.random() * 65536);
+				fo1[i] = Math.floor(Math.random() * 65536);
+				fo2[i] = Math.floor(Math.random() * 65536);
+				fo3[i] = Math.floor(Math.random() * 65536);
+			}
+			const ii = ff2ii(fi0, fi1, fi2, fi3);
+			const io = ff2ii(fo0, fo1, fo2, fo3);
+
+			performance.mark('wasmMark');
+			const out = window.nacl_wasm.t2(io, ii);
+			performance.measure('wasmMeasure', 'wasmMark');
+
+			performance.mark('jsMark');
+			window.nacl_wasm.t1([fo0, fo1, fo2, fo3], [fi0, fi1, fi2, fi3]);
+			performance.measure('jsMeasure', 'jsMark');
+
+			console.log('test',
+				compareArrays(out, ff2ii(fo0, fo1, fo2, fo3)) ? 'Equal' : 'Not equal', 
+				getPerformanceString(['wasm', 'js']));
 		});
 })();
