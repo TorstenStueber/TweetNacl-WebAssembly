@@ -553,6 +553,72 @@
 					getPerformanceString(['wasm', 'native_', 'js']));
 			})
 	}
+	
+	function testCryptoSign() {
+		const d = 23423323;
+		const msg = new Uint8Array(d);
+		const sk = new Uint8Array(64);
+		fillRandom(msg);
+		fillRandom(sk);
+
+		performance.mark('wasmMark');
+		const sm = window.nacl_wasm.lowlevel.crypto_sign(msg, sk);
+		performance.measure('wasmMeasure', 'wasmMark');
+
+		const sm2 = new Uint8Array(d + 64);
+		performance.mark('jsMark');
+		window.nacl.lowlevel.crypto_sign(sm2, msg, msg.length, sk);
+		performance.measure('jsMeasure', 'jsMark');
+
+		console.log('test crypto_sign',
+			compareArrays(sm, sm2)? 'Equal' : 'Not equal',
+			getPerformanceString(['wasm', 'js']));
+	}
+
+	function testCryptoSignKeypair() {
+		const sk = new Uint8Array(64);
+		fillRandom(sk);
+
+		let keyPair;
+		performance.mark('wasmMark');
+		for (let i = 0; i < 100; i++) keyPair = window.nacl_wasm.lowlevel.crypto_sign_keypair(sk, true);
+		performance.measure('wasmMeasure', 'wasmMark');
+
+		const pk = new Uint8Array(32);
+		performance.mark('jsMark');
+		for (let i = 0; i < 100; i++) window.nacl.lowlevel.crypto_sign_keypair(pk, sk, true);
+		performance.measure('jsMeasure', 'jsMark');
+
+		console.log('test crypto_sign_keypair',
+			compareArrays(pk, keyPair[0]) && compareArrays(sk, keyPair[1])? 'Equal' : 'Not equal',
+			getPerformanceString(['wasm', 'js']));
+	}
+
+	function testCryptoSignOpen() {
+		const d = 23423323;
+		const msg = new Uint8Array(d);
+		let sk = new Uint8Array(64);
+		fillRandom(msg);
+
+		const keyPair = window.nacl_wasm.lowlevel.crypto_sign_keypair(sk);
+		const publicKey = keyPair[0];
+		const secretKey = keyPair[1];
+
+		const sm = window.nacl_wasm.lowlevel.crypto_sign(msg, secretKey);
+
+		performance.mark('wasmMark');
+		const msg1 = window.nacl_wasm.lowlevel.crypto_sign_open(sm, publicKey);
+		performance.measure('wasmMeasure', 'wasmMark');
+
+		const msg2 = new Uint8Array(d + 64);
+		performance.mark('jsMark');
+		window.nacl.lowlevel.crypto_sign_open(msg2, sm, sm.length, publicKey);
+		performance.measure('jsMeasure', 'jsMark');
+
+		console.log('test crypto_sign_open',
+			compareArrays(msg1, msg2.slice(0, msg2.length - 64))? 'Equal' : 'Not equal',
+			getPerformanceString(['wasm', 'js']));
+	}
 
 	function testNaclScalarMult() {
 		const n = new Uint8Array(32);
@@ -743,7 +809,7 @@
 
 	window.nacl_wasm.instanceReady()
 		.then(() => {
-			/*//low level
+			//low level
 			testCryptoCoreHSalsa20();
 			testCryptoStreamSalsa20();
 			testCryptoStreamSalsa20Xor();
@@ -762,7 +828,11 @@
 			testCryptoBoxOpen();
 			testCryptoBoxKeypair();
 			testCryptoHash();
+			testCryptoSign();
+			testCryptoSignKeypair();
+			testCryptoSignOpen();
 
+			
 			//high level
 			testNaclSecretbox();
 			testNaclSecretboxOpen();
@@ -774,111 +844,6 @@
 			testNaclBoxOpen();
 			testNaclBoxKeyPair();
 			testNaclBoxKeyPairFromSecretKey();
-			testNaclHash();*/
-
-			function f2i(f) {
-				const i = new Uint8Array(128);
-				for (let j = 0; j < 16; j++) {
-					i[j * 8] = f[j] & 0xff;
-					i[j * 8 + 1] = (f[j] >> 8) & 0xff;
-					i[j * 8 + 2] = (f[j] >> 16) & 0xff;
-					i[j * 8 + 3] = (f[j] >> 24) & 0xff;
-				}
-				return i;
-			}
-
-			function ff2ii(f0, f1, f2, f3) {
-				const i = new Uint8Array(512);
-				for (let j = 0; j < 16; j++) {
-					i[j * 8] = f0[j] & 0xff;
-					i[j * 8 + 1] = (f0[j] >> 8) & 0xff;
-					i[j * 8 + 2] = (f0[j] >> 16) & 0xff;
-					i[j * 8 + 3] = (f0[j] >> 24) & 0xff;
-					i[j * 8 + 4] = f0[j] < 0 ? 255 : 0;
-					i[j * 8 + 5] = f0[j] < 0 ? 255 : 0;
-					i[j * 8 + 6] = f0[j] < 0 ? 255 : 0;
-					i[j * 8 + 7] = f0[j] < 0 ? 255 : 0;
-					i[j * 8 + 128] = f1[j] & 0xff;
-					i[j * 8 + 1 + 128] = (f1[j] >> 8) & 0xff;
-					i[j * 8 + 2 + 128] = (f1[j] >> 16) & 0xff;
-					i[j * 8 + 3 + 128] = (f1[j] >> 24) & 0xff;
-					i[j * 8 + 4 + 128] = f1[j] < 0 ? 255 : 0;
-					i[j * 8 + 5 + 128] = f1[j] < 0 ? 255 : 0;
-					i[j * 8 + 6 + 128] = f1[j] < 0 ? 255 : 0;
-					i[j * 8 + 7 + 128] = f1[j] < 0 ? 255 : 0;
-					i[j * 8 + 256] = f2[j] & 0xff;
-					i[j * 8 + 1 + 256] = (f2[j] >> 8) & 0xff;
-					i[j * 8 + 2 + 256] = (f2[j] >> 16) & 0xff;
-					i[j * 8 + 3 + 256] = (f2[j] >> 24) & 0xff;
-					i[j * 8 + 4 + 256] = f2[j] < 0 ? 255 : 0;
-					i[j * 8 + 5 + 256] = f2[j] < 0 ? 255 : 0;
-					i[j * 8 + 6 + 256] = f2[j] < 0 ? 255 : 0;
-					i[j * 8 + 7 + 256] = f2[j] < 0 ? 255 : 0;
-					i[j * 8 + 384] = f3[j] & 0xff;
-					i[j * 8 + 1 + 384] = (f3[j] >> 8) & 0xff;
-					i[j * 8 + 2 + 384] = (f3[j] >> 16) & 0xff;
-					i[j * 8 + 3 + 384] = (f3[j] >> 24) & 0xff;
-					i[j * 8 + 4 + 384] = f3[j] < 0 ? 255 : 0;
-					i[j * 8 + 5 + 384] = f3[j] < 0 ? 255 : 0;
-					i[j * 8 + 6 + 384] = f3[j] < 0 ? 255 : 0;
-					i[j * 8 + 7 + 384] = f3[j] < 0 ? 255 : 0;
-				}
-				return i;
-			}
-
-			function ff2f(f0, f1, f2, f3) {
-				const f = new Float64Array(64);
-				for (let j = 0; j < 16; j++) {
-					f[j] = f0[j];
-					f[j + 16] = f1[j];
-					f[j + 32] = f2[j];
-					f[j + 48] = f3[j];
-				}
-				return f;
-			}
-
-			const fi0 = new Float64Array(16);
-			const fi1 = new Float64Array(16);
-			const fi2 = new Float64Array(16);
-			const fi3 = new Float64Array(16);
-			const fo0 = new Float64Array(16);
-			const fo1 = new Float64Array(16);
-			const fo2 = new Float64Array(16);
-			const fo3 = new Float64Array(16);
-			const s = new Uint8Array(64);
-			
-			for (let i = 0; i < s.length; i++) {s[i] = Math.floor(Math.random() * 256);}
-
-			for (let i = 0; i < 16; i++) {
-				fi0[i] = Math.floor(Math.random() * 65536);
-				fi1[i] = Math.floor(Math.random() * 65536);
-				fi2[i] = Math.floor(Math.random() * 65536);
-				fi3[i] = Math.floor(Math.random() * 65536);
-				fo0[i] = Math.floor(Math.random() * 65536);
-				fo1[i] = Math.floor(Math.random() * 65536);
-				fo2[i] = Math.floor(Math.random() * 65536);
-				fo3[i] = Math.floor(Math.random() * 65536);
-			}
-			const ii = ff2ii(fi0, fi1, fi2, fi3);
-			const io = ff2ii(fo0, fo1, fo2, fo3);
-
-			const fff = ff2f(fo0, fo1, fo2, fo3);
-
-			const i0 = f2i(fi0);
-			const i1 = f2i(fi1);
-
-
-			performance.mark('wasmMark');
-			const [res, out] = window.nacl_wasm.t2(s);
-			performance.measure('wasmMeasure', 'wasmMark');
-
-			performance.mark('jsMark');
-			const out2 = window.nacl_wasm.t1([fo0, fo1, fo2, fo3], s);
-			performance.measure('jsMeasure', 'jsMark');
-
-			console.log(res, out2);
-			console.log('test',
-				compareArrays(out, ff2ii(fo0, fo1, fo2, fo3)) ? 'Equal' : 'Not equal', 
-				getPerformanceString(['wasm', 'js']));
+			testNaclHash();
 		});
 })();
